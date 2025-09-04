@@ -138,7 +138,7 @@ Separation of concerns:
 
 ```bash
 # from repo root
-cd server
+cd backend
 
 # install
 npm install
@@ -153,3 +153,92 @@ npm run dev   # uses nodemon
 npm start
 
 
+cd frontend
+npm install
+
+# copy env file
+cp .env.example .env
+# ensure VITE_API_BASE points to backend (e.g. http://localhost:5000)
+
+npm run dev
+# app serves at http://localhost:5173 (default Vite port)
+
+
+
+Database (Why MongoDB)
+
+Document model: An event is naturally modeled as a JSON document (title, dateTime, location, description, isPublic, shareId) — MongoDB stores this natively.
+
+Schema flexibility: Events may get optional fields later (tags, attachments) without breaking existing rows.
+
+Indexing & query patterns: We mainly query by owner and dateTime (for upcoming/past). MongoDB supports compound and single-field indexes efficiently.
+
+Developer velocity: With Mongoose, we keep schema validation + easy migrations while building quickly.
+
+Scalability: Horizontal scaling options via sharding (future-proof).
+
+Security Considerations
+
+Passwords hashed using bcrypt (salted).
+
+JWT tokens — either returned to client (Authorization header) or set in httpOnly cookies to mitigate XSS.
+
+CORS restricted to the frontend origin in production.
+
+Input validation on server-side (e.g., using Zod/Joi/express-validator) to avoid malformed data.
+
+Helmet, rate-limiting and auditing are recommended for production (not in minimal demo).
+
+Avoid exposing user-identifying data on public share endpoints.
+
+Trade-offs & Assumptions
+
+Auth: Chose JWT for simplicity and statelessness. If more strict session control or revocation is required, use server sessions or token blacklists.
+
+Share links: Lightweight shareId stored on event. Not cryptographically guaranteed secret — acceptable for basic sharing. For sensitive events, add access tokens & expiry.
+
+No attachments: File/image support not implemented to keep scope focused.
+
+Client-side timezone: Dates are stored as ISO UTC; client converts to local display. Assumes user device timezone is correct.
+
+Testing & Debugging Tips
+
+Use Postman/Insomnia to test auth and events endpoints.
+
+Check cookies and Authorization header for JWT on protected calls.
+
+Inspect network tab in browser to ensure withCredentials: true when using httpOnly cookies.
+
+Logs: backend prints DB connection and request logs (if using morgan).
+
+Possible Improvements / Roadmap
+
+Add pagination & search on events
+
+Add file attachments or calendar export (iCal)
+
+Add role-based access (teams / organizations)
+
+Rate-limit auth endpoints & add email verification
+
+Add unit/integration tests (Jest + Supertest) for API
+
+Deploy: backend → Railway / Render; frontend → Vercel / Netlify; DB → MongoDB Atlas
+
+Acknowledgements
+
+React, Vite, Tailwind, Express, Mongoose communities — for great tooling
+
+Project template inspired by standard MERN best practices
+
+License
+
+MIT License — feel free to reuse and adapt.
+
+Notes for interviewers
+
+Implementation focuses on clear separation of concerns: routes → controllers/services → models.
+
+Emphasizes security basics (password hashing, input validation) and a user-friendly frontend (responsiveness, accessibility, dark mode).
+
+Easy to extend and deploy; clear README and .env.example included for reproducibility.
